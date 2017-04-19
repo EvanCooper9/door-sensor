@@ -1,4 +1,13 @@
 <!DOCTYPE html>
+	
+	<!-- This html page template requires the following text replacements for string substitution: 
+			* server.get_user_login_status() -> authenticated or deauthenticated
+			* server.get_authenticated_user() -> get the user's name
+			* status_icon -> Is the application running?
+			* CustomLogger.readLog(config.sensor_log_file) -> raw sensor logs
+			* CustomLogger.readLog(config.server_log_file) -> raw server logs 
+	-->
+
 	<html>
 		<head>
 			<!--Import Google Icon Font-->
@@ -14,13 +23,39 @@
 			<!--Import jQuery before materialize.js-->
 			<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 			<script type="text/javascript" src="js/materialize.min.js"></script>
+			<script>
+				$(document).ready(function() {
+					if (document.getElementById('user_text').innerHTML === 'Hello, Guest!') {
+						$('#enable_button').addClass('disabled')
+						$('#disable_button').addClass('disabled')
+						$('#clearLogs_button').addClass('disabled')
+						$('#clearSensorLogs_button').addClass('disabled')
+						$('#clearServerLogs_button').addClass('disabled')
+					}
+
+					// var ids = ['sensor_logs_raw', 'server_logs_raw']
+					// for (raw_log_id in ids) {
+
+					// 	var logs = document.getElementById(ids[raw_log_id]).innerHTML
+					// 	var lines = logs.split('\n')
+					// 	var html = ''
+
+					// 	for (var i = 0; i < lines.length; i++) {
+					// 		if (lines[i] !== '') {
+					// 			html += '<li class="collection-item">' + lines[i] + '</li>';
+					// 		}
+					// 	}
+
+					// 	document.getElementById(ids[raw_log_id].substring(0, ids[raw_log_id].length - 4)).innerHTML = html
+					// 	document.getElementById(ids[raw_log_id]).innerHTML = ''
+					// }
+				});
+			</script>
 			
 			<nav class="blue">
 				<div class="container nav-wrapper">
 					<a href="#" class="brand-logo">DoorSensor</a>
-					<ul id="nav-mobile" class="right">
-						<li><i class="material-icons">done</i></li>
-					</ul>
+					<a id="user_text" href="%s" class="right">Hello, %s!</a>
 				</div>
 			</nav>
 			
@@ -30,9 +65,9 @@
 					<div class="divider"></div>
 					<div class="row"/>
 					<h4 class="center-align thin">On/Off</h4>
-					<a class="blue lighten-1 col s4 offset-s1 waves-effect waves-light btn" href="/enable">enable</a>
+					<a class="blue lighten-1 col s4 offset-s1 waves-effect waves-light btn" id="enable_button" href="/enable">enable</a>
 					<i class="col s2 center-align material-icons" id="statusIcon">%s</i>
-					<a class="blue lighten-1 col s4 waves-effect waves-light btn" href="/disable">disable</a>
+					<a class="blue lighten-1 col s4 waves-effect waves-light btn" id="disable_button" href="/disable">disable</a>
 				</div>
 				<div class="row"></div>
 				
@@ -42,22 +77,32 @@
 					<h4 class="center-align thin">Logs</h4>
 				</div>
 				<div class="row">
-					<a class="blue lighten-1 col s10 offset-s1 waves-effect waves-light btn" href="/clearLogs">delete</a>
+					<a class="blue lighten-1 col s10 offset-s1 waves-effect waves-light btn" id="clearLogs_button" href="/clearLogs">delete</a>
 				</div>
 				<div class="row">
-					<a class="blue lighten-1 col s4 offset-s1 waves-effect waves-light btn" href="/clearSensorLogs">delete sensor logs</a>
-					<a class="blue lighten-1 col s4 offset-s2 waves-effect waves-light btn" href="/clearServerLogs">delete server logs</a>
+					<a class="blue lighten-1 col s4 offset-s1 waves-effect waves-light btn" id="clearSensorLogs_button" href="/clearSensorLogs">delete sensor logs</a>
+					<a class="blue lighten-1 col s4 offset-s2 waves-effect waves-light btn" id="clearServerLogs_button" href="/clearServerLogs">delete server logs</a>
 				</div>
 				<div class="row">
 					<div class="col s6 section">
 						<h5 class="thin">Sensor logs</h5>
 						<div class="divider"></div>
-						<p class="truncate" style="white-space: pre-wrap;">%s</p>
+
+						<!-- <ul class="collection" id="sensor_logs">
+
+						</ul> -->
+
+						<p id="sensor_logs_raw" class="truncate" style="white-space: pre-wrap;">%s</p>
 					</div>
 					<div class="col s6 section">
 						<h5 class="thin">Server logs</h5>
 						<div class="divider"></div>
-						<p class="truncate" style="white-space: pre-wrap;">%s</p>
+
+						<!-- <ul class="collection" id="server_logs">
+
+						</ul> -->
+
+						<p id="server_logs_raw" class="truncate" style="white-space: pre-wrap;">%s</p>
 					</div>
 				</div>
 			</div>

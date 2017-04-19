@@ -1,8 +1,10 @@
 import os
+import config
+import datetime
 
 class CustomLogger:
 	@staticmethod
-	def logFile(content, destination):
+	def log_file(content, destination):
 		data = open(destination, 'a+').read()
 		sequence = (content, data)
 
@@ -11,14 +13,18 @@ class CustomLogger:
 		file.close()
 
 	@staticmethod
-	def logConsole(content):
+	def log_console(content):
 		print content
 
 	@staticmethod
-	def readLog(log):
+	def read_log(log):
 		data = open(log, 'a+').read()
 		return data
 
 	@staticmethod
-	def clearLogs(log):
-		os.remove(log)
+	def clear_logs(log):
+		# backup rather than delete
+		time = str(datetime.datetime.now())[:-10].replace(' ', '_').replace(':', '-')
+		dir_path = str(os.path.dirname(os.path.realpath(__file__)))
+		path = dir_path + config.archive_log_prefix + time + '.txt'
+		os.rename(log, path)

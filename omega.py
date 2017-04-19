@@ -1,3 +1,7 @@
+# to use the omega's hardware
+# GpioControl control controls the omega's inputs and outputs
+# StoppableThread creates a thread that can be easily stopped
+
 import datetime
 import threading
 import onionGpio
@@ -6,8 +10,7 @@ from logger import CustomLogger
 
 class GpioControl:
 	@staticmethod
-	def establishPin(pin, direction, default):
-		print '> Initializing gpio pin %d'%(pin)
+	def _establish_pin(pin, direction, default):
 		gpioObj = onionGpio.OnionGpio(pin)
 
 		if direction == 0:
@@ -22,35 +25,44 @@ class GpioControl:
 		return gpioObj
 
 	@staticmethod
-	def readSensor(gpioObj):
+	def read_sensor(gpioObj):
 		value = gpioObj.getValue()
 		if int(value) == 0:
 			return True
 		return False
 
 	@staticmethod
-	def ledColor(color):
-		pins = [15, 16, 17]
+	def led_color(color):
+		valid_colors = [
+			'red',
+			'green',
+			'blue',
+			'yellow',
+			'off'
+		]
 
-		if color == 'red':
-			GpioControl.establishPin(17, 1, 0)
-			pins.remove(17)
-		elif color == 'green':
-			GpioControl.establishPin(16, 1, 0)
-			pins.remove(16)
-		elif color == 'blue':
-			GpioControl.establishPin(15, 1, 0)
-			pins.remove(15)
-		elif color == 'yellow':
-			GpioControl.establishPin(16, 1, 0)
-			GpioControl.establishPin(17, 1, 0)
-			pins.remove(16)
-			pins.remove(17)
-		else:
+		if color not in valid_colors:
 			return False
+		else:
+			pins = [15, 16, 17]
 
-		for pin in pins:
-			GpioControl.establishPin(pin, 1, 1)
+			if color == 'red':
+				GpioControl._establish_pin(17, 1, 0)
+				pins.remove(17)
+			elif color == 'green':
+				GpioControl._establish_pin(16, 1, 0)
+				pins.remove(16)
+			elif color == 'blue':
+				GpioControl._establish_pin(15, 1, 0)
+				pins.remove(15)
+			elif color == 'yellow':
+				GpioControl._establish_pin(16, 1, 0)
+				GpioControl._establish_pin(17, 1, 0)
+				pins.remove(16)
+				pins.remove(17)
+
+			for pin in pins:
+				GpioControl._establish_pin(pin, 1, 1)
 
 		return True
 
@@ -58,8 +70,8 @@ class StoppableThread(threading.Thread):
 	def __init__(self):
 		super(StoppableThread, self).__init__()
 		self._stop = threading.Event()
-		self.gpioObj = GpioControl.establishPin(1, 0, 0)
-		self.broken = False
+		self._gpioObj = GpioControl._establish_pin(1, 0, 0)
+		self._broken = False
 
 	def stop(self):
 		self._stop.set()
@@ -69,12 +81,14 @@ class StoppableThread(threading.Thread):
 
 	def run(self):
 		while True:
-			currentState = GpioControl.readSensor(self.gpioObj)
-			if currentState != self.broken:
-				self.broken = currentState
-				if currentState:
-					time = datetime.datetime.now()
-					CustomLogger.logFile('* %s - Sensor broken\n' % time, config.sensorLogfile)
+			current_state = GpioControl.read_sensor(self._gpioObj)
+			if current_state != self._broken:
+				self._broken = current_state
+				if current_state:
+					time = str(datetime.datetime.now())[:-10]
+					door_status = 'Closed' if config.door_open else 'Open'
+					CustomLogger.log_file('* %s - %s\n' % (time, door_status), config.sensor_log_file)
+					config.door_open = not config.door_open
 			if self.stopped():
 				self.stop()
 				break
